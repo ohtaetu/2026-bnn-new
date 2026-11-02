@@ -10,7 +10,8 @@ A from-scratch reimplementation of the binary neural network (BNN) from our pape
 available, so this repository (`-new`) rebuilds it from the paper and improves it: training with 1-bit
 weights and activations using batch normalization, Adam and a cross-entropy loss, then inference with the
 bit-packing + XNOR-popcount scheme of the paper's Algorithm 2, running as a fused CUDA kernel on an
-NVIDIA GeForce RTX 3060. The fully binary network now reaches **96.43%** on MNIST (80.82% in the paper).
+NVIDIA GeForce RTX 3060. The fully binary network now reaches **96.43%** on MNIST (80.82% in the paper)
+and runs at about 32 million images per second, 4.4–4.7× faster than the 32-bit network on the same GPU.
 
 > [!IMPORTANT]
 > **If you use this code, please cite the paper:**
@@ -23,39 +24,95 @@ NVIDIA GeForce RTX 3060. The fully binary network now reaches **96.43%** on MNIS
 
 ## Results
 
-Test accuracy on the 10,000 test images after the last of 100 epochs (no early stopping, single seed),
-and inference time on an NVIDIA GeForce RTX 3060. The "Original paper" column is Tables 2 and 3 of the
-paper. This version is retrained with an improved recipe (see [What is new](#what-is-new-compared-with-the-original-paper)), which is why every number is higher.
+All numbers below were measured with this code on an NVIDIA GeForce RTX 3060. The "Original paper"
+values are Tables 2 and 3 of the paper. This version uses an improved training recipe (see
+[What is new](#what-is-new-compared-with-the-original-paper)), and **every configuration is more
+accurate than in the original paper**.
 
-| Dataset | Model | W/A bits | Input threshold | **This version (%)** | Original paper (%) | Memory (KB) | GPU, 10k images (µs/image) | GPU, 1 image (ms) |
-|---|---|---|---|---|---|---|---|---|
-| MNIST | BNN, XNOR-popcount | 1/1 | 127.5 | **96.43** | 80.82 | 52.7 | **0.0305** | **0.0118** |
-| MNIST | BNN, BinaryConnect | 1/32 | – | **97.62** | 88.13 | 49.6 | 0.1538 | 0.1560 |
-| MNIST | Full 32-bit | 32/32 | – | **98.32** | 96.55 | 1590.0 | 0.1417 | 0.0666 |
-| Fashion-MNIST | BNN, XNOR-popcount | 1/1 | 127.5 | **82.11** | 67.16 | 52.7 | **0.0306** | **0.0100** |
-| Fashion-MNIST | BNN, XNOR-popcount | 1/1 | 90 | **84.27** | 70.99 | 52.7 | **0.0311** | **0.0111** |
-| Fashion-MNIST | BNN, BinaryConnect | 1/32 | – | **88.42** | 82.74 | 49.6 | 0.1566 | 0.1740 |
-| Fashion-MNIST | Full 32-bit | 32/32 | – | **89.78** | 86.77 | 1590.0 | 0.1419 | 0.0547 |
+### Accuracy
 
-- **Accuracy:** the fully binary XNOR-popcount network reaches **96.43%** on MNIST (80.82% in the paper)
-  and **84.27%** on Fashion-MNIST with threshold 90 (70.99% in the paper). As in the paper, threshold 90
-  works better than 127.5 on Fashion-MNIST.
-- **Speed:** the XNOR models run on the fused CUDA kernel of this repository: about **0.03 µs per image**
-  (≈ 32 million images/s) on the whole test set, about **4.6× faster** than the 32-bit model in PyTorch
-  (cuBLAS) on the same GPU, and 0.01 ms for a single image versus 0.05–0.07 ms.
-- **Memory:** 52.7 KB for the packed XNOR model, including padding, thresholds and output scales,
-  versus 1590 KB for the 32-bit model (about 30× smaller), in line with the paper's 51 KB vs 1587 KB.
-- **Bit-exact:** on every XNOR model, the GPU kernel, the C++ CPU reference, the NumPy integer path and
-  the PyTorch model give the same prediction on all 10,000 test images.
+Test accuracy on the 10,000 test images after the last of 100 epochs (no early stopping, single seed).
 
-Timing notes: 32-bit and BinaryConnect numbers are PyTorch eager-mode forward passes; XNOR numbers are
-one launch of the fused CUDA kernel, input bit-packing included, host-to-device copies excluded.
-Single-image times are dominated by kernel-launch overhead. BinaryConnect accuracy fluctuates by a few
-points between epochs (see the curves), so its last-epoch value is less stable than the others.
+| Dataset | Model | W/A bits | Input threshold | **This version (%)** | Original paper (%) | Gain (points) | Memory (KB) |
+|---|---|---|---|---|---|---|---|
+| MNIST | BNN, XNOR-popcount | 1/1 | 127.5 | **96.43** | 80.82 | **+15.61** | 52.7 |
+| MNIST | BNN, BinaryConnect | 1/32 | – | **97.62** | 88.13 | **+9.49** | 49.6 |
+| MNIST | Full 32-bit | 32/32 | – | **98.32** | 96.55 | **+1.77** | 1590.0 |
+| Fashion-MNIST | BNN, XNOR-popcount | 1/1 | 127.5 | **82.11** | 67.16 | **+14.95** | 52.7 |
+| Fashion-MNIST | BNN, XNOR-popcount | 1/1 | 90 | **84.27** | 70.99 | **+13.28** | 52.7 |
+| Fashion-MNIST | BNN, BinaryConnect | 1/32 | – | **88.42** | 82.74 | **+5.68** | 49.6 |
+| Fashion-MNIST | Full 32-bit | 32/32 | – | **89.78** | 86.77 | **+3.01** | 1590.0 |
+
+The binary networks gain the most (+9 to +16 points), because the new recipe mainly fixes how 1-bit
+networks are trained. The gap between the fully binary network and the 32-bit network shrinks from
+15.7 to **1.9 points** on MNIST and from 15.8 to **5.5 points** on Fashion-MNIST. As in the paper,
+threshold 90 works better than 127.5 on Fashion-MNIST. Memory for the XNOR model is the packed file
+(weights with padding, integer thresholds, output scales): about **30× smaller** than the 32-bit model,
+in line with the paper's 51 KB vs 1587 KB. BinaryConnect accuracy fluctuates by a few points between
+epochs (see the curves), so its last-epoch value is less stable than the others.
 
 ![Test accuracy per epoch](results/training_curves.png)
 
-Raw numbers: [results/summary.json](results/summary.json).
+### Runtime
+
+Mean ± standard deviation over 5 repeated measurements (`python bench_runtime.py --repeats 5`).
+
+| Dataset | Model | Engine | Whole test set, 10,000 images (µs/image) | One image (ms) |
+|---|---|---|---|---|
+| MNIST | BNN, XNOR-popcount (t=127.5) | **CUDA kernel (this repo)** | **0.0323 ± 0.0009** | **0.0107 ± 0.0013** |
+| MNIST | BNN, BinaryConnect | PyTorch | 0.1544 ± 0.0020 | 0.1705 ± 0.0302 |
+| MNIST | Full 32-bit | PyTorch | 0.1421 ± 0.0009 | 0.0754 ± 0.0125 |
+| Fashion-MNIST | BNN, XNOR-popcount (t=127.5) | **CUDA kernel (this repo)** | **0.0311 ± 0.0002** | **0.0106 ± 0.0005** |
+| Fashion-MNIST | BNN, XNOR-popcount (t=90) | **CUDA kernel (this repo)** | **0.0311 ± 0.0002** | **0.0102 ± 0.0003** |
+| Fashion-MNIST | BNN, BinaryConnect | PyTorch | 0.1564 ± 0.0054 | 0.1851 ± 0.0374 |
+| Fashion-MNIST | Full 32-bit | PyTorch | 0.1469 ± 0.0034 | 0.0931 ± 0.0243 |
+
+Speed-up of the XNOR-popcount kernel:
+
+| Compared with | Whole test set | One image |
+|---|---|---|
+| 32-bit model, same GPU (PyTorch, cuBLAS) | **4.4× (MNIST), 4.7× (Fashion-MNIST)** | **7.0×, 8.8–9.1×** |
+| BinaryConnect model, same GPU (PyTorch) | 4.8×, 5.0× | 15.9×, 17.5–18.1× |
+| XNOR-popcount in the original paper (0.0196 ms/image, laptop CPU) | about **600×** (different hardware) | – |
+
+Throughput is about **31–32 million images per second**. For reference, the simple single-thread C++
+loop that the program uses to check correctness takes 0.018–0.020 ms per image on this PC's CPU, close
+to the paper's 0.0196 ms per image.
+
+**How runtime is measured**
+
+- Hardware and software: GeForce RTX 3060 12 GB (sm_86, 28 SMs), driver 560.94, CUDA 12.6,
+  PyTorch 2.8 (CUDA 12.9 build), Windows 11. Nothing else ran on the GPU during the measurements.
+- CUDA kernel (`cuda/bnn_xnor.cu`): timed with CUDA events. After 20 warm-up launches, it is launched
+  200 times on the whole test set and 2,000 times on one image; the reported time is per launch divided
+  by the number of images. Each launch covers the full inference: bit packing of the raw `uint8`
+  pixels on the GPU, both layers and the arg-max.
+- PyTorch models (`train.py --time-only`): `eval()` mode, `torch.no_grad()`, binary weights binarized
+  once beforehand. After 10 warm-up passes, 50 forward passes are timed with CUDA events, for a batch
+  of 10,000 images and for a batch of 1.
+- In both cases the input is already on the GPU; host↔device copies are not included.
+- Correctness is checked in the same run: the GPU predictions are compared with the C++ CPU reference
+  and the NumPy integer path, with **0 differences out of 10,000** on all three XNOR models.
+
+Raw numbers: [results/runtime.json](results/runtime.json) (runtime), [results/summary.json](results/summary.json) (accuracy).
+
+### Conclusion
+
+1. **Accuracy.** Retrained with batch normalization, Adam and a cross-entropy loss, the same 784–512–10
+   networks are more accurate than in the original paper in all seven configurations, by up to
+   15.6 points. The fully binary network reaches 96.43% on MNIST and 84.27% on Fashion-MNIST, close to
+   the 32-bit network. The low accuracy reported in the paper came from the original training recipe
+   (MSE loss, no batch normalization, no optimizer tuning), not from the BNN method itself.
+2. **Memory.** With 1-bit weights packed into `uint32` words, the model takes 52.7 KB instead of
+   1590 KB, about 30× less, on any hardware.
+3. **Runtime.** The fused XNOR-popcount kernel classifies about 32 million images per second on an
+   RTX 3060. On the same GPU it is 4.4–4.7× faster than the 32-bit model over the whole test set and
+   7–9× faster for a single image, with bit-exact results. The speed-up over 32-bit is smaller than the
+   roughly 40× the paper measured on a CPU, because a GPU already runs 32-bit matrix multiplication very
+   efficiently; the memory saving does not depend on the hardware.
+4. **Overall.** Bit packing with XNOR-popcount keeps the accuracy of a well-trained binary network while
+   cutting memory by about 30× and running several times faster than 32-bit inference, which makes
+   it a practical choice for resource-constrained edge and IoT devices.
 
 ## What the code does
 
@@ -149,6 +206,9 @@ python run_all.py
 
 # re-measure all timings without retraining (keep the GPU otherwise idle)
 python run_all.py --skip-train
+
+# runtime table: 5 repeated measurements, mean ± std
+python bench_runtime.py --repeats 5
 ```
 
 For another GPU, change `-arch` (for example `sm_75`, `sm_89`), or on Windows run
@@ -182,6 +242,7 @@ bnn/data.py          MNIST / Fashion-MNIST loading and input binarization
 bnn/pack.py          bit packing, BatchNorm folding, NumPy integer-only reference, file formats
 train.py             train one configuration, export packed model
 run_all.py           reproduce Tables 2 and 3, write results/
+bench_runtime.py     repeat the runtime measurements, write results/runtime.json
 make_testset.py      build testset.bin for a packed model
 cuda/bnn_xnor.cu     fused XNOR-popcount kernel, CPU reference, benchmark
 cuda/build.bat       Windows build script
