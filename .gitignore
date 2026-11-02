@@ -1,0 +1,12 @@
+data/
+runs/
+runs_*/
+__pycache__/
+*.pyc
+cuda/*.exe
+cuda/*.lib
+cuda/*.exp
+cuda/*.obj
+cuda/bnn_xnor
+results/run_all.log
+pretrained/*/testset.bin

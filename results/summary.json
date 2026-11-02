@@ -1,0 +1,207 @@
+[
+  {
+    "run": "mnist_xnor_t127.5",
+    "dataset": "mnist",
+    "model": "xnor",
+    "threshold": 127.5,
+    "paper_acc": 80.82,
+    "test_acc": 96.43,
+    "torch_gpu_time": {
+      "batch_all": {
+        "ms_per_call": 2.002452545166016,
+        "us_per_image": 0.20024525451660158
+      },
+      "batch_1": {
+        "ms_per_call": 0.5645964813232421,
+        "us_per_image": 564.5964813232422
+      }
+    },
+    "fp32_param_bytes": 1630288,
+    "cuda": {
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "accuracy": 96.43,
+      "mismatch_gpu_vs_cpu": 0,
+      "mismatch_gpu_vs_python": 0,
+      "batch_all": {
+        "images": 10000,
+        "ms_per_call": 0.304502,
+        "us_per_image": 0.03045
+      },
+      "batch_1": {
+        "ms_per_call": 0.011782
+      },
+      "cpu_reference_ms_per_image": 0.021411
+    },
+    "packed": {
+      "integer_path_test_acc": 96.43,
+      "disagreements_with_torch": 0,
+      "footprint_bytes": {
+        "weight_bits": 50816,
+        "packed_total": 53968
+      },
+      "pixel_threshold_int": 128
+    }
+  },
+  {
+    "run": "mnist_bc",
+    "dataset": "mnist",
+    "model": "bc",
+    "threshold": null,
+    "paper_acc": 88.13,
+    "test_acc": 97.62,
+    "torch_gpu_time": {
+      "batch_all": {
+        "ms_per_call": 1.5378604125976563,
+        "us_per_image": 0.15378604125976564
+      },
+      "batch_1": {
+        "ms_per_call": 0.15601471900939942,
+        "us_per_image": 156.0147190093994
+      }
+    },
+    "fp32_param_bytes": 1630288
+  },
+  {
+    "run": "mnist_fp32",
+    "dataset": "mnist",
+    "model": "fp32",
+    "threshold": null,
+    "paper_acc": 96.55,
+    "test_acc": 98.32,
+    "torch_gpu_time": {
+      "batch_all": {
+        "ms_per_call": 1.416642608642578,
+        "us_per_image": 0.14166426086425782
+      },
+      "batch_1": {
+        "ms_per_call": 0.06664959907531738,
+        "us_per_image": 66.64959907531738
+      }
+    },
+    "fp32_param_bytes": 1628200
+  },
+  {
+    "run": "fashion_xnor_t127.5",
+    "dataset": "fashion",
+    "model": "xnor",
+    "threshold": 127.5,
+    "paper_acc": 67.16,
+    "test_acc": 82.11,
+    "torch_gpu_time": {
+      "batch_all": {
+        "ms_per_call": 2.0052581787109376,
+        "us_per_image": 0.20052581787109375
+      },
+      "batch_1": {
+        "ms_per_call": 0.25734720230102537,
+        "us_per_image": 257.3472023010254
+      }
+    },
+    "fp32_param_bytes": 1630288,
+    "cuda": {
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "accuracy": 82.11,
+      "mismatch_gpu_vs_cpu": 0,
+      "mismatch_gpu_vs_python": 0,
+      "batch_all": {
+        "images": 10000,
+        "ms_per_call": 0.306473,
+        "us_per_image": 0.030647
+      },
+      "batch_1": {
+        "ms_per_call": 0.010016
+      },
+      "cpu_reference_ms_per_image": 0.017882
+    },
+    "packed": {
+      "integer_path_test_acc": 82.11,
+      "disagreements_with_torch": 0,
+      "footprint_bytes": {
+        "weight_bits": 50816,
+        "packed_total": 53968
+      },
+      "pixel_threshold_int": 128
+    }
+  },
+  {
+    "run": "fashion_xnor_t90",
+    "dataset": "fashion",
+    "model": "xnor",
+    "threshold": 90.0,
+    "paper_acc": 70.99,
+    "test_acc": 84.27,
+    "torch_gpu_time": {
+      "batch_all": {
+        "ms_per_call": 1.9717529296875,
+        "us_per_image": 0.19717529296875
+      },
+      "batch_1": {
+        "ms_per_call": 0.2494816017150879,
+        "us_per_image": 249.4816017150879
+      }
+    },
+    "fp32_param_bytes": 1630288,
+    "cuda": {
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "accuracy": 84.27,
+      "mismatch_gpu_vs_cpu": 0,
+      "mismatch_gpu_vs_python": 0,
+      "batch_all": {
+        "images": 10000,
+        "ms_per_call": 0.310958,
+        "us_per_image": 0.031096
+      },
+      "batch_1": {
+        "ms_per_call": 0.01111
+      },
+      "cpu_reference_ms_per_image": 0.018253
+    },
+    "packed": {
+      "integer_path_test_acc": 84.27,
+      "disagreements_with_torch": 0,
+      "footprint_bytes": {
+        "weight_bits": 50816,
+        "packed_total": 53968
+      },
+      "pixel_threshold_int": 90
+    }
+  },
+  {
+    "run": "fashion_bc",
+    "dataset": "fashion",
+    "model": "bc",
+    "threshold": null,
+    "paper_acc": 82.74,
+    "test_acc": 88.42,
+    "torch_gpu_time": {
+      "batch_all": {
+        "ms_per_call": 1.565982666015625,
+        "us_per_image": 0.1565982666015625
+      },
+      "batch_1": {
+        "ms_per_call": 0.1739628791809082,
+        "us_per_image": 173.9628791809082
+      }
+    },
+    "fp32_param_bytes": 1630288
+  },
+  {
+    "run": "fashion_fp32",
+    "dataset": "fashion",
+    "model": "fp32",
+    "threshold": null,
+    "paper_acc": 86.77,
+    "test_acc": 89.78,
+    "torch_gpu_time": {
+      "batch_all": {
+        "ms_per_call": 1.4186495971679687,
+        "us_per_image": 0.14186495971679688
+      },
+      "batch_1": {
+        "ms_per_call": 0.0547430419921875,
+        "us_per_image": 54.7430419921875
+      }
+    },
+    "fp32_param_bytes": 1628200
+  }
+]

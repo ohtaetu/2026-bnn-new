@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "This code reimplements the paper below. If you use it, please cite the paper."
+title: "2026-bnn-new: binary neural network with XNOR-popcount inference on CUDA"
+type: software
+authors:
+  - family-names: Ngo
+    given-names: Tu Tien
+    affiliation: "Kookmin University"
+    orcid: "https://orcid.org/0009-0000-0554-585X"
+license: MIT
+repository-code: "https://github.com/ohtaetu/2026-bnn-new"
+keywords:
+  - binary neural network
+  - XNOR-popcount
+  - CUDA
+  - edge devices
+  - IoT
+preferred-citation:
+  type: article
+  title: "Optimizing Binary Neural Network for Resource-Constrained Edge Devices in IoT Applications"
+  authors:
+    - family-names: Nguyen
+      given-names: Van Minh
+    - family-names: Ngo
+      given-names: Tien Tu
+      orcid: "https://orcid.org/0009-0000-0554-585X"
+    - family-names: Tran
+      given-names: Tien Dung
+    - family-names: Nguyen
+      given-names: Minh Tam
+    - family-names: Vo
+      given-names: Minh Huan
+  journal: "Journal of Technical Education Science"
+  volume: 21
+  issue: 1
+  start: 12
+  end: 22
+  year: 2026
+  month: 2
+  issn: "2615-9740"
+  doi: "10.54644/jte.2025.1756"
+  url: "https://doi.org/10.54644/jte.2025.1756"
+  publisher:
+    name: "Ho Chi Minh City University of Technology and Engineering"
